@@ -57,7 +57,7 @@ const STRINGS = {
     revenueLogged: "revenue logged", milesToday: "miles today", accountingPL: "accounting p/l",
     hoursWorkedLabel: "worked", scheduled: "scheduled", ranOverBy: "ran over by", underBy: "under by",
     dontForget: "Don't forget", reachOutExtra: "Reach out to request payment for the extra", thisBlockTook: "this block took.",
-    draftTheEmail: "Draft the email", done: "Done",
+    draftTheEmail: "Draft the email", done: "Done", editEntry: "Something wrong? Edit this entry",
     langToggle: "ES",
     endYourDay: "End your day", home: "Home", pickup: "pickup", startedAt: "Started at",
     noDepotOrHome: "No depot or home address on file — add one under Places, or enter the return miles manually below.",
@@ -111,7 +111,7 @@ const STRINGS = {
     revenueLogged: "de ingresos registrados", milesToday: "millas hoy", accountingPL: "p/l contable",
     hoursWorkedLabel: "trabajado", scheduled: "programado", ranOverBy: "se excedió por", underBy: "quedó por debajo por",
     dontForget: "No olvides", reachOutExtra: "Comunícate para pedir el pago por el tiempo extra de", thisBlockTook: "que tomó este bloque.",
-    draftTheEmail: "Redactar el correo", done: "Listo",
+    draftTheEmail: "Redactar el correo", done: "Listo", editEntry: "¿Algo está mal? Editar esta entrada",
     langToggle: "EN",
     endYourDay: "Termina tu día", home: "Casa", pickup: "recogida", startedAt: "Comenzó en",
     noDepotOrHome: "No hay dirección de depósito ni de casa registrada — agrega una en Lugares, o ingresa las millas de regreso manualmente abajo.",
@@ -1077,6 +1077,7 @@ export default function App() {
             const cashDeduction = trip.miles * cashRate;
             const dayRevenueTotal = (revenue[activeDay.date] || 0) + (revenueAmount || 0);
             setDayComplete({
+              tripId: trip.id,
               date: trip.date,
               miles: trip.miles,
               revenue: dayRevenueTotal,
@@ -1113,7 +1114,15 @@ export default function App() {
       )}
 
       {dayComplete && (
-        <DayCompleteReveal data={dayComplete} onDone={() => setDayComplete(null)} />
+        <DayCompleteReveal
+          data={dayComplete}
+          onDone={() => setDayComplete(null)}
+          onEdit={() => {
+            setEditingId(dayComplete.tripId);
+            setShowForm(true);
+            setDayComplete(null);
+          }}
+        />
       )}
 
       {showOnboarding && (
@@ -1952,7 +1961,7 @@ function SwitchGigModal({ activeDay, settings, existingRevenue, onSwitch, onCanc
 
 /* ---------- day complete reveal (the payoff moment after finishing a shift) ---------- */
 
-function DayCompleteReveal({ data, onDone }) {
+function DayCompleteReveal({ data, onDone, onEdit }) {
   const { t } = useT();
   const milesAnim = useCountUp(data.miles);
   const plAnim = useCountUp(Math.abs(data.accountingPL));
@@ -2039,6 +2048,11 @@ function DayCompleteReveal({ data, onDone }) {
         <button className="btn-primary" style={{ width: "100%", justifyContent: "center", padding: 14, fontSize: 15 }} onClick={onDone}>
           <Check size={17} /> {t("done")}
         </button>
+        {onEdit && (
+          <button onClick={onEdit} style={{ display: "block", width: "100%", textAlign: "center", background: "none", border: "none", color: "#9C9385", fontSize: 12.5, cursor: "pointer", marginTop: 14 }}>
+            {t("editEntry")}
+          </button>
+        )}
       </div>
     </div>
   );
